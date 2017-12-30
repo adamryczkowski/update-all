@@ -9,7 +9,7 @@ function turn_https {
 
 function turn_http {
 	plik="/etc/apt/sources.list.d/$1"
-	if [ -f "/etc/apt/sources.list.d/${plik}" ]; then
+	if [ -f "${plik}" ]; then
 		sudo sed -i 's/https/http/g' ${plik}*
 	fi
 }
@@ -23,7 +23,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 	aptproxy_ip=${BASH_REMATCH[3]}
 	aptproxy_port=${BASH_REMATCH[4]}
 	echo "Found aptproxy: ${aptproxy_ip}:${aptproxy_port} in ${aptproxy_file}"
-	if ping -c 1 -w 1  $aptproxy_ip 192.168.10.1 >/dev/null; then
+	if ping -c 1 -w 1  $aptproxy_ip >/dev/null; then
 		turn_http wine.list
 		turn_http nodesource.list
 		turn_http slack.list
