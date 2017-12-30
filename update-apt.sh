@@ -30,6 +30,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http syncthing.list
 		turn_http gitlab.list
 		turn_http skype-stable.list
+		turn_http docker.list
 		if [ -z "$aptproxy_enabled" ]; then
 			echo "Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" > ${aptproxy_file}
 		fi
@@ -43,6 +44,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_https syncthing.list
 		turn_https gitlab.list
 		turn_https skype-stable.list
+		turn_https docker.list
 	fi
 fi
 
