@@ -32,11 +32,11 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http skype-stable.list
 		turn_http docker.list
 		if [ -z "$aptproxy_enabled" ]; then
-			echo "Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" > ${aptproxy_file}
+			echo "Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
 	else
 		if [ -n "$aptproxy_enabled" ]; then
-			echo "#Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" > ${aptproxy_file}
+			echo "#Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
 		turn_https wine.list
 		turn_https nodesource.list
