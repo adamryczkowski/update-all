@@ -1,8 +1,8 @@
 #!/bin/bash
 if which R; then
-	sudo -H Rscript -e 'update.packages(ask = FALSE, repos="http://cran.us.r-project.org")'
-	sudo -H Rscript -e 'if(!require("devtools")) install.packages("devtools", ask=FALSE)'
-	sudo -H Rscript -e 'if(!require("dtupdate")) devtools::install_github("hrbrmstr/dtupdate"); dtupdate::github_update()'
+	Rscript -e 'update.packages(ask = FALSE, repos="http://cran.us.r-project.org")'
+	Rscript -e 'if(!require("devtools")) {install.packages("devtools", ask=FALSE);devtools::install_github("hadley/devtools")}'
+	Rscript -e 'if(!require("dtupdate")) devtools::install_github("hrbrmstr/dtupdate"); dtupdate::github_update()'
 	Rscript -e 'update.packages(ask = FALSE, repos="http://cran.us.r-project.org")'
 	
 #	Rscript -e 'pkgs = loadedNamespaces();desc <- lapply(pkgs, packageDescription, lib.loc = NULL); for (d in desc) {if (!is.null(d$GithubSHA1)) {install_github(repo = d$GithubRepo, username = d$GithubUsername)}}'
