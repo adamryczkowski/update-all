@@ -1,9 +1,23 @@
 #!/bin/bash
+
+localrmirror="/media/adam-minipc/other"
+remotemirror="http://cran.us.r-project.org"
+
+if [ ! -d ${localrmirror}/r-mirror ]; then
+	if mount ${localrmirror}; then
+		if [ -d ${localrmirror}/r-mirror ]; then
+			remotemirror="file:///${localrmirror}/r-mirror"
+		fi
+	fi
+else
+	remotemirror="file:///${localrmirror}/r-mirror"
+fi
+
 if which R; then
-	Rscript -e 'update.packages(ask = FALSE, repos="http://cran.us.r-project.org")'
-	Rscript -e 'if(!require("devtools")) {install.packages("devtools", ask=FALSE);devtools::install_github("hadley/devtools")}'
+	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
+	Rscript -e "if(!require(\"devtools\")) {install.packages(\"devtools\", ask=FALSE, repos=\"${remotemirror}\");devtools::install_github(\"hadley/devtools\")}"
 	Rscript -e 'if(!require("dtupdate")) devtools::install_github("hrbrmstr/dtupdate"); dtupdate::github_update()'
-	Rscript -e 'update.packages(ask = FALSE, repos="http://cran.us.r-project.org")'
+	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
 	
 #	Rscript -e 'pkgs = loadedNamespaces();desc <- lapply(pkgs, packageDescription, lib.loc = NULL); for (d in desc) {if (!is.null(d$GithubSHA1)) {install_github(repo = d$GithubRepo, username = d$GithubUsername)}}'
 fi
@@ -17,7 +31,7 @@ if dpkg -s rstudio >/dev/null 2>/dev/null; then
 		if [ "$ourversion" != "$netversion" ]; then
 			RSTUDIO_URI=$(Rscript /tmp/get_rstudio_uri.R)
 			tee /tmp/get_rstudio_uri.R <<EOF
-if(!require('rvest')) install.packages('rvest', Ncpus=8, repos='http://cran.us.r-project.org')
+if(!require('rvest')) install.packages('rvest', Ncpus=8, repos='${remotemirror}')
 xpath='.downloads:nth-child(2) tr:nth-child(5) a'
 url = "https://www.rstudio.com/products/rstudio/download/"
 thepage<-xml2::read_html(url)
