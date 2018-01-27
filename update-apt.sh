@@ -44,11 +44,11 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http_all gitlab
 		turn_http_all skype.com
 		turn_http_all docker
-		if [ -z "$aptproxy_enabled" ]; then
+		if [ -n "$aptproxy_enabled" ]; then
 			echo "Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
 	else
-		if [ -n "$aptproxy_enabled" ]; then
+		if [ -z "$aptproxy_enabled" ]; then
 			echo "#Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
 		turn_https_all winehq.org
