@@ -5,15 +5,18 @@ function find_apt_list {
 }
 
 function turn_https {
-	plik="/etc/apt/sources.list.d/$1"
+	echo "http->https: $1"
+#	plik="/etc/apt/sources.list.d/$1"
+	plik="$1"
 	if [ -f "$plik" ]; then
 		sudo sed -i 's/http:/https:/g' ${plik}*
 	fi
 }
 
 function turn_http {
-	echo "http: $1"
-	plik="/etc/apt/sources.list.d/$1"
+	echo "https->http: $1"
+#	plik="/etc/apt/sources.list.d/$1"
+	plik="$1"
 	if [ -f "${plik}" ]; then
 		sudo sed -i 's/https/http/g' ${plik}*
 	fi
