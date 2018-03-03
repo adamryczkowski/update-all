@@ -52,7 +52,8 @@ function update_r {
 	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
 	Rscript -e "if(!require(\"devtools\")) {install.packages(\"devtools\", ask=FALSE, repos=\"${remotemirror}\");devtools::install_github(\"hadley/devtools\")}"
 	Rscript -e 'if(!require("dtupdate")) devtools::install_github("hrbrmstr/dtupdate"); dtupdate::github_update()'
-	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
+	Rscript -e 'dtupdate::github_update(auto.install = TRUE, ask = FALSE)'
+#	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
 }
 
 function update_rstudio {
