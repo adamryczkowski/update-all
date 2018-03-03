@@ -2,7 +2,7 @@
 
 localrmirror="/media/adam-minipc/other"
 remotemirror="http://cran.us.r-project.org"
-adam-minipc=192.168.10.2
+minipc=192.168.10.2
 
 function get_home_dir {
 	echo $( getent passwd "$USER" | cut -d: -f6 )
@@ -16,7 +16,7 @@ function get_other_folder {
 	mountpoint="/media/adam-minipc/other"
 	if [ -d "${mountpoint}" ]; then
 		if [ ! -d "${mountpoint}${folder}" ]; then
-			if ping -c 1 -w 1 ${adam-minipc}>/dev/null; then
+			if ping -c 1 -w 1 ${minipc}>/dev/null; then
 				mount ${mountpoint}
 			fi 
 		fi
