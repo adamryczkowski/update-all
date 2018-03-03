@@ -109,8 +109,8 @@ EOT
 		RSTUDIO_URI=$(sudo Rscript /tmp/get_rstudio_uri.R)
 		RSTUDIO_URI=$(sudo Rscript /tmp/get_rstudio_uri.R)
 		
-		wget -c $RSTUDIO_URI --output-document ${deb_folder}/rstudio-server_${netvesion}_amd64.deb
-		if ! sudo dpkg -i ${deb_folder}/rstudio-server_${netvesion}_amd64.deb; then
+		wget -c $RSTUDIO_URI --output-document ${deb_folder}/rstudio-server_${netversion}_amd64.deb
+		if ! sudo dpkg -i ${deb_folder}/rstudio-server_${netversion}_amd64.deb; then
 			sudo apt install -f --yes
 		fi
 		rm /tmp/get_rstudio_uri.R
