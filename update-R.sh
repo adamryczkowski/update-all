@@ -26,7 +26,7 @@ function get_other_folder {
 	echo ""
 }
 
-function get_debs_folder {
+function get_deb_folder {
 	deb_folder=$(get_home_dir)/tmp/debs
 	other_folder=$(get_other_folder debs)
 	if [ -n "${other_folder}" ]; then
