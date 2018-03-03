@@ -2,6 +2,7 @@
 
 localrmirror="/media/adam-minipc/other"
 remotemirror="http://cran.us.r-project.org"
+adam-minipc=192.168.10.2
 
 function get_home_dir {
 	echo $( getent passwd "$USER" | cut -d: -f6 )
