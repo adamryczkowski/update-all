@@ -64,7 +64,6 @@ function update_rstudio {
 		netversion=$(Rscript -e 'cat(stringr::str_match(scan("https://www.rstudio.org/links/check_for_update?version=1.0.0", what = character(0), quiet=TRUE), "^[^=]+=([^\\&]+)\\&.*")[[2]])')
 		if [ "$ourversion" != "$netversion" ]; then
 			deb_folder=$(get_deb_folder)
-			RSTUDIO_URI=$(Rscript /tmp/get_rstudio_uri.R)
 			tee /tmp/get_rstudio_uri.R <<EOF
 if(!require('rvest')) install.packages('rvest', Ncpus=8, repos='${remotemirror}')
 xpath='.downloads:nth-child(2) tr:nth-child(5) a'
