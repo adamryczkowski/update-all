@@ -48,6 +48,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http_all skype.com
 		turn_http_all docker
 		turn_http_all rstudio.com
+		turn_http_all virtualbox.org
 		if [ -n "$aptproxy_enabled" ]; then
 			echo "Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
@@ -63,6 +64,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_https_all skype.com
 		turn_https_all docker
 		turn_https_all rstudio.com
+		turn_https_all virtualbox.org
 	fi
 fi
 
