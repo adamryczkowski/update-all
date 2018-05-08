@@ -61,7 +61,8 @@ function update_rstudio {
 	pattern='^Version: ([0-9.]+)\s*$'
 	if [[ $ver =~ $pattern ]]; then
 		ourversion=${BASH_REMATCH[1]}
-		netversion=$(Rscript -e 'cat(stringr::str_match(scan("https://www.rstudio.org/links/check_for_update?version=1.0.0", what = character(0), quiet=TRUE), "^[^=]+=([^\\&]+)\\&.*")[[2]])')
+#		netversion=$(Rscript -e 'cat(stringr::str_match(scan("https://www.rstudio.org/links/check_for_update?version=1.0.0", what = character(0), quiet=TRUE), "^[^=]+=([^\\&]+)\\&.*")[[2]])')
+		netversion=$(curl -s http://download1.rstudio.org/current.ver)
 		if [ "$ourversion" != "$netversion" ]; then
 			deb_folder=$(get_deb_folder)
 			tee /tmp/get_rstudio_uri.R <<EOF
@@ -80,7 +81,7 @@ EOF
 			rm /tmp/get_rstudio_uri.R
 	
 			if fc-list |grep -q FiraCode; then
-				if !grep -q "text-rendering:" /usr/lib/rstudio/www/index.htm; then
+				if ! grep -q "text-rendering:" /usr/lib/rstudio/www/index.htm; then
 					sudo sed -i '/<head>/a<style>*{text-rendering: optimizeLegibility;}<\/style>' /usr/lib/rstudio/www/index.htm
 				fi
 			fi
