@@ -4,7 +4,7 @@ localrmirror="/media/adam-minipc/other"
 remotemirror="http://cran.us.r-project.org"
 minipc=192.168.10.2
 
-mount $localrmirror
+mount_smb_share "$localrmirror"
 
 function get_home_dir {
 	echo $( getent passwd "$USER" | cut -d: -f6 )
