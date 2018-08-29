@@ -4,6 +4,16 @@ localrmirror="/media/adam-minipc/other"
 remotemirror="http://cran.us.r-project.org"
 minipc=192.168.10.2
 
+function mount_smb_share {
+	local mountpoint=$1
+	if [ ! -d "$mountpoint" ]; then
+		while [ ! -d "$mountpoint" ]; do
+			mountpoint=$(dirname "$mountpoint")
+		done
+		logexec mount "$mountpoint"
+	fi
+}
+
 mount_smb_share "$localrmirror"
 
 function get_home_dir {
