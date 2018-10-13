@@ -1,7 +1,9 @@
 #!/bin/bash
 function find_apt_list {
 	phrase="$1"
-	grep -l /etc/apt/sources.list.d/*.list -e "${phrase}"
+	if [[ -f /etc/apt/sources.list.d/*.list ]]; then
+		grep -l /etc/apt/sources.list.d/*.list -e "${phrase}"
+	fi
 }
 
 function turn_https {

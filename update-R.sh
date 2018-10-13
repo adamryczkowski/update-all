@@ -60,7 +60,7 @@ function update_r {
 		remotemirror="http://cran.us.r-project.org"
 	fi
 	sudo chown -R ${USER} $(get_home_dir)/R
-	sudo Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
+	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
 	Rscript -e "update.packages(ask = FALSE, repos=\"${remotemirror}\")"
 	Rscript -e "if(!require(\"devtools\")) {install.packages(\"devtools\", ask=FALSE, repos=\"${remotemirror}\");devtools::install_github(\"hadley/devtools\")}"
 	Rscript -e 'if(!require("dtupdate")) devtools::install_github("hrbrmstr/dtupdate"); dtupdate::github_update()'
@@ -120,8 +120,8 @@ thepage<-xml2::read_html(url)
 link<-html_node(thepage, xpath) %>% html_text()
 cat(stringr::str_match(link, '^\\$( wget)? (.*)$')[[3]])
 EOT
-		RSTUDIO_URI=$(sudo Rscript /tmp/get_rstudio_uri.R)
-		RSTUDIO_URI=$(sudo Rscript /tmp/get_rstudio_uri.R)
+		RSTUDIO_URI=$(Rscript /tmp/get_rstudio_uri.R)
+		RSTUDIO_URI=$(Rscript /tmp/get_rstudio_uri.R)
 		
 		wget -c $RSTUDIO_URI --output-document ${deb_folder}/rstudio-server_${netversion}_amd64.deb
 		if ! sudo dpkg -i ${deb_folder}/rstudio-server_${netversion}_amd64.deb; then
