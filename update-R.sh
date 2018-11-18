@@ -74,6 +74,7 @@ function update_rstudio {
 	if [[ $ver =~ $pattern ]]; then
 		ourversion=${BASH_REMATCH[1]}
 #		netversion=$(Rscript -e 'cat(stringr::str_match(scan("https://www.rstudio.org/links/check_for_update?version=1.0.0", what = character(0), quiet=TRUE), "^[^=]+=([^\\&]+)\\&.*")[[2]])')
+#		netversion=$(wget --no-check-certificate -qO- https://s3.amazonaws.com/rstudio-server/current.ver)
 		netversion=$(curl -s http://download1.rstudio.org/current.ver)
 		if [ "$ourversion" != "$netversion" ]; then
 			deb_folder=$(get_deb_folder)
@@ -86,8 +87,8 @@ cat(html_node(thepage, xpath) %>% html_attr("href"))
 EOF
 			RSTUDIO_URI=$(Rscript /tmp/get_rstudio_uri.R)
 			
-			wget -c --output-document /tmp/rstudio.deb $RSTUDIO_URI -O ${deb_folder}/rstudio_${netvesion}_amd64.deb
-			if ! sudo dpkg -i ${deb_folder}/rstudio_${netvesion}_amd64.deb; then
+			wget -c --output-document /tmp/rstudio.deb $RSTUDIO_URI -O ${deb_folder}/rstudio_${netversion}_amd64.deb
+			if ! sudo dpkg -i ${deb_folder}/rstudio_${netversion}_amd64.deb; then
 				sudo apt install -f --yes
 			fi
 			rm /tmp/get_rstudio_uri.R
