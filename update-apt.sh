@@ -1,7 +1,7 @@
 #!/bin/bash
 function find_apt_list {
 	phrase="$1"
-	if [[ -f /etc/apt/sources.list.d/*.list ]]; then
+	if [ -n "$(find /etc/apt/sources.list.d -name '*.list' | head -1)" ]; then
 		grep -l /etc/apt/sources.list.d/*.list -e "${phrase}"
 	fi
 }
