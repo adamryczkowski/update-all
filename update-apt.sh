@@ -54,6 +54,8 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http_all signal.org
 		turn_http_all bintray.com/zulip
 		turn_http_all packagecloud.io/AtomEditor
+		turn_http_all dl.bintray.com/fedarovich/qbittorrent
+		turn_http_all mkvtoolnix.download
 		if [ -n "$aptproxy_enabled" ]; then
 			echo "Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
@@ -73,6 +75,8 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_https_all signal.org
 		turn_https_all bintray.com/zulip
 		turn_https_all packagecloud.io/AtomEditor
+		turn_http_all dl.bintray.com/fedarovich/qbittorrent
+		turn_http_all mkvtoolnix.download
 	fi
 fi
 
