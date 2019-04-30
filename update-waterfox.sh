@@ -1,7 +1,5 @@
 #!/bin/bash
-<<<<<<< HEAD
 repo_path=/media/adam-minipc/other/debs
-=======
 
 if which waterfox; then
 	waterfox=$(which waterfox)
@@ -37,7 +35,6 @@ else
 	exit 1
 fi
 
->>>>>>> a7eefde5a9b6adf6bdb4794e015356daf82746cd
 function get_cached_file {
 	local filename="$1"
 	local download_link="$2"
@@ -51,14 +48,7 @@ function get_cached_file {
 			return 1
 		fi
 		if [ ! -w "${repo_path}" ]; then
-<<<<<<< HEAD
 			echo "Cannot write to the repo ${repo_path}" >/dev/stderr
-=======
-			if ! sudo chown ${USER} "${repo_path}"; then
-				echo "Cannot write to the repo ${repo_path}" >/dev/stderr
-				exit 1
-			fi
->>>>>>> a7eefde5a9b6adf6bdb4794e015356daf82746cd
 			local repo_path="/tmp/repo_path"
 			mkdir -p /tmp/repo_path
 		fi
@@ -71,8 +61,6 @@ function get_cached_file {
 	echo "${repo_path}/${filename}"
 }
 
-<<<<<<< HEAD
-=======
 function is_folder_writable {
 	local folder="$1"
 	local user="$2"
@@ -112,7 +100,6 @@ function is_folder_writable {
 }
 
 
->>>>>>> a7eefde5a9b6adf6bdb4794e015356daf82746cd
 function uncompress_cached_file {
 	local filename="$1"
 	local destination="$2"
@@ -167,7 +154,6 @@ function uncompress_cached_file {
 	fi
 }
 
-<<<<<<< HEAD
 localfolder=/usr/local/lib/waterfox
 localexec=${localfolder}/waterfox
 if [ -f $localexec ]; then
@@ -409,14 +395,10 @@ Exec=${localexec} -private-window
 EOF
 	fi
 fi
-=======
 
 if [[ $waterfox_version != $version ]]; then
 	file=$(get_cached_file "waterfox-${waterfox_version}.en-US.linux-x86_64.tar.bz2" "https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-${waterfox_version}.en-US.linux-x86_64.tar.bz2")
 	uncompress_cached_file waterfox-${waterfox_version}.en-US.linux-x86_64.tar.bz2 "/opt/"
-	sudo chown root -R "/opt/waterfix"
+	sudo chown root -R "/opt/waterfox"
 fi
-
-
->>>>>>> a7eefde5a9b6adf6bdb4794e015356daf82746cd
 
