@@ -9,13 +9,13 @@ else
 	exit 0 #no waterfox
 fi
 
-version=$(${waterfox} --version)
+local_version=$(${waterfox} --version)
 pattern='^Mozilla Waterfox ([0-9.]+)$'
 
-if [[ "$version" =~ $pattern ]]; then
-	version=${BASH_REMATCH[1]}
+if [[ "$local_version" =~ $pattern ]]; then
+	local_version=${BASH_REMATCH[1]}
 else
-	echo "Something wrong with the waterfox. ${waterfox} --version returned\n${version}"
+	echo "Something wrong with the waterfox. ${waterfox} --version returned\n${local_version}"
 	exit 1
 fi
 
@@ -25,13 +25,13 @@ function get_latest_github_release_name { #source: https://gist.github.com/lukec
 		sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
 }
 
-waterfox_version=$(get_latest_github_release_name MrAlex94/Waterfox)
+remote_version=$(get_latest_github_release_name MrAlex94/Waterfox)
 pattern='^(([0-9]+)\.([0-9]+)\.([0-9]+)).*$'
 
-if [[ "$waterfox_version" =~ $pattern ]]; then
-	waterfox_version=${BASH_REMATCH[1]}
+if [[ "$remote_version" =~ $pattern ]]; then
+	remote_version=${BASH_REMATCH[1]}
 else
-	echo "Something wrong with the waterfox. ${waterfox} --version returned\n${version}"
+	echo "Something wrong with the remote version of waterfox: ${remote_version}"
 	exit 1
 fi
 
@@ -101,23 +101,24 @@ function is_folder_writable {
 
 
 function uncompress_cached_file {
+set -x
 	local filename="$1"
 	local destination="$2"
 	local usergr="$3"
 	local user
-	local timestamp_path="${destination}/$(basename ${filename}).timestamp"
+	local timestamp_path="$(dirname ${destination})/$(basename ${filename}).timestamp"
 	if [ -z "$usergr" ]; then
 		user=$USER
 		usergr=$user
 		group=""
 	else
 		local pattern='^([^:]+):([^:]+)$'
-		if [[ "$usergr" != $pattern ]]; then
+		if [[ "$usergr" =~ $pattern ]]; then
 			group=${BASH_REMATCH[2]}
 			user=${BASH_REMATCH[1]}
 		else
 			group=""
-			user=$user
+			user=$usergr
 		fi
 	fi
 	
@@ -127,52 +128,64 @@ function uncompress_cached_file {
 		path_filename="$filename"
 	fi
 	if [ -z "$path_filename" ]; then
+		echo "no input file $path_filename"
 		return 1
 	fi
 	if [ -z "$destination" ]; then
+		echo "no destination $destination"
 		return 2
 	fi
-	moddate_remote=$(stat -c %y "$path_filename")
-	if [ -f "$timestamp_path" ]; then
-		moddate_hdd=$(cat "$timestamp_path")
-		if [ "$moddate_hdd" == "$moddate_remote" ]; then
-			return 0
+	if [ -d "$destination" ]; then
+		moddate_remote=$(stat -c %y "$destination")
+		if [ -f "$timestamp_path" ]; then
+			moddate_hdd=$(cat "$timestamp_path")
+			if [ "$moddate_hdd" == "$moddate_remote" ]; then
+				return 0
+			fi
 		fi
 	fi
-	if is_folder_writable "$destination" "$user"; then
+	pushd $(dirname $destination)
+	if is_folder_writable $(dirname "$destination") "$user"; then
 		if [ "$user" == "$USER" ]; then
-			tar -xvf "$path_filename" -C "$destination"
-			echo "$moddate_remote" | tee "$timestamp_path"
+#			logexec tar -xvf "$path_filename" -C "$destination"
+			dtrx --one rename "$path_filename"
+			extension="${path_filename##*.}"
+			filename_no_ext="${path_filename%.*}"
+			if [ ! -d "$filename_no_ext" ]; then
+				filename_no_ext="${filename_no_ext%.*}"
+			fi
+			if [ -d "$(basename $destination)" ]; then
+				sudo rm -rf $(basename $destination) 
+			fi
+			sudo mv $(basename $filename_no_ext) $(basename $destination) 
+			echo "$moddate_remote" | tee "$timestamp_path" >/dev/null
 		else
-			sudo -u "$user" -- tar -xvf "$path_filename" -C "$destination"
-			echo "$moddate_remote" | sudo -u "$user" -- tee "$timestamp_path"
+#			echo sudo -u "$user" dtrx --one rename "$path_filename"
+			sudo -u "$user" dtrx --one rename "$path_filename"
+			if [ -d "$(basename $destination)" ]; then
+				sudo rm -rf $(basename $destination) 
+			fi
+			sudo mv $(basename $filename_no_ext) $(basename $destination) 
+#			logexec sudo -u "$user" -- tar -xvf "$path_filename" -C "$destination"
+			echo "$moddate_remote" | sudo -u "$user" -- tee "$timestamp_path" >/dev/null
 		fi
 	else
-		sudo tar -xvf "$path_filename" -C "$destination"
+#		echo sudo dtrx --one rename "$path_filename"
+		sudo dtrx --one rename "$path_filename"
+			if [ -d "$(basename $destination)" ]; then
+				rm -rf $(basename $destination) 
+			fi
+		sudo mv $(basename $filename_no_ext) $(basename $destination) 
+#		logexec sudo tar -xvf "$path_filename" -C "$destination"
 		sudo chown -R "$usergr" "$destination"
-		echo "$moddate_remote" | sudo -u "$user" -- tee "$timestamp_path"
+		echo "$moddate_remote" | sudo -u "$user" -- tee "$timestamp_path" >/dev/null
 	fi
+	popd
+set +x
 }
 
-localfolder=/usr/local/lib/waterfox
-localexec=${localfolder}/waterfox
-if [ -f $localexec ]; then
-	wersjalocal=$(/usr/local/lib/waterfox/waterfox --version | egrep -o '[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+')
-	wersjanet=$(git ls-remote --tags "https://github.com/MrAlex94/Waterfox.git" | awk '{print $2}' | grep -v '{}' | awk -F"/" '{print $3}' | sort -n -t. -k1,1 -k2,2 -k3,3 | tail -n 1)
-
-	#echo "Remote version: $wersjanet"
-	#echo "Local version: $wersjalocal"
-
-	if [ "$wersjanet" != "$wersjalocal" ]; then
-		echo "Found new wersion $wersjanet on the web. (our version: $wersjalocal)"
-		url="https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-${wersjanet}.en-US.linux-x86_64.tar.bz2"
-		filename="waterfox-${wersjanet}.en-US.linux-x86_64.tar.bz2"
-		get_cached_file "$filename" "$url"
-		uncompress_cached_file "$filename" /usr/local/lib root
-	fi
-	
-	if [ ! -f /usr/share/applications/waterfox.desktop ]; then
-		sudo tee -a /usr/share/applications/waterfox.desktop  <<EOF
+if [ ! -f /usr/share/applications/waterfox.desktop ]; then
+	sudo tee -a /usr/share/applications/waterfox.desktop  <<EOF
 [Desktop Entry]
 Version=1.0
 Name=Waterfox Web Browser
@@ -393,12 +406,11 @@ Name[uk]=Відкрити нове вікно у потайливому режи
 Name[zh_TW]=開啟新隱私瀏覽視窗
 Exec=${localexec} -private-window
 EOF
-	fi
 fi
 
-if [[ $waterfox_version != $version ]]; then
-	file=$(get_cached_file "waterfox-${waterfox_version}.en-US.linux-x86_64.tar.bz2" "https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-${waterfox_version}.en-US.linux-x86_64.tar.bz2")
-	uncompress_cached_file waterfox-${waterfox_version}.en-US.linux-x86_64.tar.bz2 "/opt/"
+if [[ $remote_version != $local_version ]]; then
+	file=$(get_cached_file "waterfox-${remote_version}.en-US.linux-x86_64.tar.bz2" "https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-${remote_version}.en-US.linux-x86_64.tar.bz2")
+	uncompress_cached_file waterfox-${remote_version}.en-US.linux-x86_64.tar.bz2 "/opt/waterfox"
 	sudo chown root -R "/opt/waterfox"
 fi
 
