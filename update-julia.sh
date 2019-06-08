@@ -100,15 +100,16 @@ else
 	return 1
 fi
 
-if [ "$loc_julia_ver" == "$remote_julia_ver" ]; then
-	exit 0
+if [ "$loc_julia_ver" != "$remote_julia_ver" ]; then
+
+	julia_file="julia-${remote_julia_ver}-linux-x86_64.tar.gz"
+	julia_link="https://julialang-s3.julialang.org/bin/linux/x64/${remote_julia_shortver}/${julia_file}"
+	julia_path=$(get_cached_file "${julia_file}" "${julia_link}")
+	sudo rm -rf /opt/julia
+	uncompress_cached_file "${julia_path}" /opt/julia
+	$julia_bin -e 'using Pkg;Pkg.add(["Revise", "IJulia", "Rebugger", "RCall", "Knet", "Plots", "StatsPlots" , "DataFrames", "JLD", "Flux", "TensorFlow", "Debugger", "Weave", "ScikitLearn"]);ENV["PYTHON"]=""; Pkg.update(); Pkg.build(); using Revise; using IJulia; using Rebugger; using RCall; using Knet; using Plots; using StatsPlots; using DataFrames; using JLD; using Flux; using TensorFlow; using Debugger'
+else
+	$julia_bin -e 'using Pkg;Pkg.update()'
 fi
 
-julia_file="julia-${remote_julia_ver}-linux-x86_64.tar.gz"
-julia_link="https://julialang-s3.julialang.org/bin/linux/x64/${remote_julia_shortver}/${julia_file}"
-julia_path=$(get_cached_file "${julia_file}" "${julia_link}")
-sudo rm -rf /opt/julia
-uncompress_cached_file "${julia_path}" /opt/julia
-
-$julia_bin -e 'using Pkg;Pkg.add(["Revise", "IJulia", "Rebugger", "RCall", "Knet", "Plots", "StatsPlots" , "DataFrames", "JLD", "Flux", "TensorFlow", "Debugger", "Weave", "ScikitLearn"]);ENV["PYTHON"]=""; Pkg.update(); Pkg.build(); using Revise; using IJulia; using Rebugger; using RCall; using Knet; using Plots; using StatsPlots; using DataFrames; using JLD; using Flux; using TensorFlow; using Debugger'
 
