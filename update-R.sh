@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if  ! which R >/dev/null; then
+    exit 0
+fi
+
 localrmirror="/media/adam-minipc/other"
 remotemirror="http://cran.us.r-project.org"
 minipc=192.168.10.2
@@ -10,7 +14,7 @@ function mount_smb_share {
 		while [ ! -d "$mountpoint" ]; do
 			mountpoint=$(dirname "$mountpoint")
 		done
-		logexec mount "$mountpoint"
+		mount "$mountpoint"
 	fi
 }
 
