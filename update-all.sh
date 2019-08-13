@@ -12,4 +12,6 @@
 
 ./update-calibre.sh
 
+./update-conda.sh
+
 wait
