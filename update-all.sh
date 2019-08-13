@@ -6,12 +6,16 @@
 
 ./update-R.sh &
 
+./update-snap.sh &
+
+./update-conda.sh
+
 ./update-julia.sh
 
 ./update-waterfox.sh
 
 ./update-calibre.sh
 
-./update-conda.sh
+
 
 wait
