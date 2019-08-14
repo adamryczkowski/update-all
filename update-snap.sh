@@ -15,9 +15,9 @@ function enable_host {
 	local HOSTS_LINE="${ip} ${host}"
 	local pattern=" *#? *${ip} +${host}"
 	pattern=${pattern//./\\.} #replace . into \.
-	if grep  -E "$pattern" /etc/hosts;  then #element is already added
+	if grep  -E "$pattern" /etc/hosts >/dev/null;  then #element is already added
 	   on_pattern=" *# *${ip} +${host}"
-   	if grep  -E "$on_pattern" /etc/hosts; then #element is not already turned on
+   	if grep  -E "$on_pattern" /etc/hosts >/dev/null; then #element is not already turned on
    	   sudo sed -i -r "s/${pattern}/${ip} ${host}/g" /etc/hosts
    	fi
 	else
@@ -31,17 +31,17 @@ function disable_host {
 	local HOSTS_LINE="${ip} ${host}"
 	local pattern=" *#? *${ip} +${host}"
 	pattern=${pattern//./\\.} #replace . into \.
-	if ! grep  -E "$pattern" /etc/hosts;  then #element is already added
+	if ! grep  -E "$pattern" /etc/hosts >/dev/null;  then #element is already added
 	   add_host "$1" "$2"
 	fi
    on_pattern=" *# *${ip} +${host}"
-	if ! grep  -E "$on_pattern" /etc/hosts; then #element is not already turned on
+	if ! grep  -E "$on_pattern" /etc/hosts >/dev/null; then #element is not already turned on
 	   sudo sed -i -r "s/${pattern}/# ${ip} ${host}/g" /etc/hosts
 	fi
 }
 
 if which snap >/dev/null; then
    enable_host api.snapcraft.io 127.0.0.1
-   snap refresh
+   sudo snap refresh
    disable_host api.snapcraft.io 127.0.0.1
 fi
