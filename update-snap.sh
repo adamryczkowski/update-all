@@ -3,13 +3,13 @@ function add_host {
 	local host=$1
 	local ip=$2
 	local HOSTS_LINE="${ip} ${host}"
-	if [ ! -n "$(grep ${host} /etc/hosts)" ]; then
+	if [ ! -n "$(grep ${host} /etc/hosts)" >/dev/null ]; then
 		$loglog
 		echo "$HOSTS_LINE" | sudo tee -a /etc/hosts
 	fi
 }
 
-function enable_host {
+function disable_host {
 	local host=$1
 	local ip=$2
 	local HOSTS_LINE="${ip} ${host}"
@@ -25,7 +25,7 @@ function enable_host {
 	fi
 }
 
-function disable_host {
+function enable_host {
 	local host=$1
 	local ip=$2
 	local HOSTS_LINE="${ip} ${host}"
@@ -41,7 +41,10 @@ function disable_host {
 }
 
 if which snap >/dev/null; then
+   echo "Enabling api.snapcraft.io..."
    enable_host api.snapcraft.io 127.0.0.1
+   echo "Refreshing snaps..."
    sudo snap refresh
+   echo "Disabling api.snapcraft.io..."
    disable_host api.snapcraft.io 127.0.0.1
 fi
