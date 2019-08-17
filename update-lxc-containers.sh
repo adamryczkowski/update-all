@@ -14,7 +14,9 @@ fi
 
 lxc_list_stopped=$(lxc list --format csv | grep -E '^[^,]+,STOPPED' | grep -o -E '^[^,]+')
 
-lxc_list_running=( $(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+') )
+lxc_list_running=$(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+')
+
+echo "Debug: $lxc_list_running"
 
 function update_running_lxc {
     local lxc_name=$1
