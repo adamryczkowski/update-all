@@ -14,13 +14,11 @@ fi
 
 lxc_list_stopped=$(lxc list --format csv | grep -E '^[^,]+,STOPPED' | grep -o -E '^[^,]+')
 
-lxc_list_running=$(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+')
-
-echo "Debug: $lxc_list_running"
+lxc_list_running=( $(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+') )
 
 function update_running_lxc {
     local lxc_name=$1
-    ips=( $(lxc list -c4 --format csv $lxc_name | sed -E "s/ \([^\)]+\) ?//g") )
+    ips=( $(eval echo $(lxc list -c4 --format csv $lxc_name | sed -E "s/ \([^\)]+\) ?//g") ) )
     
     for ip in "${ips[@]}"; do
         if ssh -o PreferredAuthentications=publickey ${ip} /bin/true >/dev/null; then
