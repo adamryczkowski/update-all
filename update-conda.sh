@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! $(which conda >/dev/null) ]; then
+if [ which conda >/dev/null ]; then
    pushd $(dirname $(which conda))
    conda update conda -n base --yes
    conda update conda-build -n base --yes
