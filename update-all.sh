@@ -37,6 +37,8 @@ fi
 
 ./update-calibre.sh
 
+./update-youtube-dl.sh
+
 ./update-lxc-containers.sh
 
 wait
