@@ -4,12 +4,16 @@ if ! which lxc >/dev/null; then
     exit 0 #no containers
 fi
 
-lxc_list_stopped=$(lxc list --format csv | grep -E '^[^,]+,STOPPED' | grep -o -E '^[^,]+')
+lxc list 2>/dev/null >/dev/null
 
 if [ ! $? -eq 0 ]; then
     echo "Error in executing lxc list. Perhaps lxc was not installed properly" >/dev/stderr
     exit 0 #error when accessing containers. We are not going to fix it here, so just return.
 fi
+
+
+lxc_list_stopped=$(lxc list --format csv | grep -E '^[^,]+,STOPPED' | grep -o -E '^[^,]+')
+
 lxc_list_running=( $(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+') )
 
 function update_running_lxc {
