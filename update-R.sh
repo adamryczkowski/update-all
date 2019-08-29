@@ -60,6 +60,7 @@ function update_r {
 	cran_folder=$(get_other_folder r-mirror)
 	if [ -n "${cran_folder}" ]; then
 		remotemirror="file:///${cran_folder}"
+		remotemirror="http://cran.us.r-project.org"
 	else
 		remotemirror="http://cran.us.r-project.org"
 	fi
