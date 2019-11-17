@@ -26,14 +26,21 @@ function get_latest_github_release_name { #source: https://gist.github.com/lukec
 }
 
 remote_version=$(get_latest_github_release_name MrAlex94/Waterfox)
-pattern='^(([0-9]+)\.([0-9]+)\.([0-9]+)).*$'
-
-if [[ "$remote_version" =~ $pattern ]]; then
-	remote_version=${BASH_REMATCH[1]}
+pattern='^([0-9\.]+)\-.*$'
+if [[ "${remote_version}" =~ $pattern ]]; then
+   ver_str="${BASH_REMATCH[1]}"
+   clas_str="${BASH_REMATCH[2]}"
 else
 	echo "Something wrong with the remote version of waterfox: ${remote_version}"
 	exit 1
 fi
+
+#if [[ "$remote_version" =~ $pattern ]]; then
+#	remote_version=${BASH_REMATCH[1]}
+#else
+#	echo "Something wrong with the remote version of waterfox: ${remote_version}"
+#	exit 1
+#fi
 
 function get_cached_file {
 	local filename="$1"
@@ -409,8 +416,10 @@ EOF
 fi
 
 if [[ $remote_version != $local_version ]]; then
-	file=$(get_cached_file "waterfox-${remote_version}.en-US.linux-x86_64.tar.bz2" "https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-${remote_version}.en-US.linux-x86_64.tar.bz2")
-	uncompress_cached_file waterfox-${remote_version}.en-US.linux-x86_64.tar.bz2 "/opt/waterfox"
+	link="https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-classic-${ver_str}.en-US.linux-x86_64.tar.bz2"
+	filename="waterfox-${ver_str}.en-US.linux-x86_64.tar.bz2"
+	file=$(get_cached_file "$filename" "$link")
+	uncompress_cached_file ${filename} "/opt/waterfox"
 	sudo chown root -R "/opt/waterfox"
 fi
 
