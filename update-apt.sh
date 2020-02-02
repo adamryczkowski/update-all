@@ -1,4 +1,19 @@
 #!/bin/bash
+
+
+function is_host_up {
+	ping -c 1 -w 1  $1 >/dev/null
+}
+
+function is_host_tcp_port_up {
+   if is_host_up $1; then
+      local host=$1
+      local port=$2
+      nc -zw3 $1 $2
+   fi
+}
+
+
 function find_apt_list {
 	phrase="$1"
 	if [ -n "$(find /etc/apt/sources.list.d -name '*.list' | head -1)" ]; then
@@ -40,8 +55,9 @@ if [[ $myproxy =~ $pattern2 ]]; then
 	aptproxy_enabled=${BASH_REMATCH[2]}
 	aptproxy_ip=${BASH_REMATCH[3]}
 	aptproxy_port=${BASH_REMATCH[4]}
-	echo "Found aptproxy: ${aptproxy_ip}:${aptproxy_port} in ${aptproxy_file}"
-	if ping -c 1 -w 1  $aptproxy_ip >/dev/null; then
+	echo "System can use aptproxy: ${aptproxy_ip}:${aptproxy_port} in ${aptproxy_file}"
+	if is_host_tcp_port_up $aptproxy_ip $aptproxy_port >/dev/null; then
+   	echo "aptproxy ${aptproxy_ip}:${aptproxy_port} seems up and running!"
 		turn_http_all winehq.org
 		turn_http_all nodesource.com
 		turn_http_all slacktechnologies
@@ -63,6 +79,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		if [ -z "$aptproxy_enabled" ]; then
 			echo "#Acquire::http::Proxy \"http://${aptproxy_ip}:${aptproxy_port}\";" | sudo tee ${aptproxy_file}
 		fi
+   	echo "no aptproxy running on the current network!"
 		turn_https_all winehq.org
 		turn_https_all nodesource.com
 		turn_https_all slacktechnologies
@@ -75,8 +92,8 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_https_all signal.org
 		turn_https_all bintray.com/zulip
 		turn_https_all packagecloud.io/AtomEditor
-		turn_http_all dl.bintray.com/fedarovich/qbittorrent
-		turn_http_all mkvtoolnix.download
+		turn_https_all dl.bintray.com/fedarovich/qbittorrent
+		turn_https_all mkvtoolnix.download
 	fi
 fi
 

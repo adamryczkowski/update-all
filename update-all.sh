@@ -41,4 +41,5 @@ fi
 
 ./update-lxc-containers.sh
 
+./do-bedup.sh
 wait
