@@ -2,7 +2,8 @@
 
 
 function is_host_up {
-	ping -c 1 -w 1  $1 >/dev/null
+	ping -c1 -w1  $1 >/dev/null
+	return $?
 }
 
 function is_host_tcp_port_up {
@@ -10,6 +11,9 @@ function is_host_tcp_port_up {
       local host=$1
       local port=$2
       nc -zw3 $1 $2
+      return $?
+   else
+      return 1
    fi
 }
 
@@ -58,7 +62,8 @@ if [[ $myproxy =~ $pattern2 ]]; then
 	aptproxy_ip=${BASH_REMATCH[3]}
 	aptproxy_port=${BASH_REMATCH[4]}
 	echo "System can use aptproxy: ${aptproxy_ip}:${aptproxy_port} in ${aptproxy_file}"
-	if is_host_tcp_port_up $aptproxy_ip $aptproxy_port >/dev/null; then
+#	if is_host_up $aptproxy_ip $aptproxy_port >/dev/null; then
+	if is_host_tcp_port_up $aptproxy_ip  >/dev/null; then
    	echo "aptproxy ${aptproxy_ip}:${aptproxy_port} seems up and running!"
 		turn_http_all winehq.org
 		turn_http_all nodesource.com
