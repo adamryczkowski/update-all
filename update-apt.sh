@@ -27,6 +27,8 @@ function turn_https {
 	plik="$1"
 	if [ -f "$plik" ]; then
 		sudo sed -i 's/http:/https:/g' ${plik}*
+	else
+	   return 1
 	fi
 }
 
