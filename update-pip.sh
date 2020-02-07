@@ -1,4 +1,7 @@
 #!/bin/bash
+
+trusted_infix=""
+
 function is_host_up {
 	ping -c 1 -w 1  $1 >/dev/null
 }
@@ -24,13 +27,14 @@ function enable_devpi_client {
    
    local contents="[global]
 index-url = http://${address}/root/pypi/+simple/
-trusted-host=adam-minipc
+trusted-host=${address}
 
 [search]
 index = http://${address}/root/pypi/"
    
    file=$(get_home_dir $1)/.pip/pip.conf
    echo "$contents" | sudo tee $file >/dev/null
+   trusted_infix="--trusted ${address}"
 }
 
 function disable_devpi_client {
@@ -49,6 +53,10 @@ function disable_devpi_client {
 function find_devpi_server {
    local user=$1
    local file=$2
+   if [[ "$devpi_server_tried" == 1 ]]; then
+      return
+   fi
+   devpi_server_tried=1
    file=$(get_home_dir $1)/.pip/$file
    if sudo [ ! -e $file ]; then
    	devpi_server_ip=""
@@ -66,25 +74,36 @@ function find_devpi_server {
 	fi
 }
 
+function pip_update {
+   $1 install --upgrade pip
+   $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
+}
 
-if which pip3; then
-   devpi_disabled=0
+function get_devpi_server {
    find_devpi_server root pip.conf
    if [[ "$devpi_server_ip" == "" ]]; then
       find_devpi_server $USER pip.conf
-      devpi_disabled=1
-   fi
-   if [[ "$devpi_server_ip" != "" ]]; then
-   	echo "System can use devpi_server: ${devpi_server_ip}:${devpi_server_port}"
-      if is_host_tcp_port_up $devpi_server_ip $devpi_server_port; then
-      	echo "devpi server ${devpi_server_ip}:${devpi_server_port} seems up and running!"
-         enable_devpi_client root ${devpi_server_ip}:${devpi_server_port}
-      else
-      	echo "no devpi server running on the current network!"
-         disable_devpi_client root
+      if [[ "$devpi_server_ip" == "" ]]; then
+         find_devpi_server root pip.conf.bak
+         if [[ "$devpi_server_ip" == "" ]]; then
+            find_devpi_server $USER pip.conf.bak
+         fi
       fi
    fi
-   sudo -H pip3 install --upgrade pip
-   sudo -H pip3 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 sudo -H pip3 install -U
-fi 
+}
+
+devpi_server_tried=0
+if which pip>/dev/null; then
+   pipbin=$(which pip)
+   if [[ "${pipbin}" == "/usr/local/bin/pip" ]]; then
+      pipbin="sudo -H $pipbin"
+   fi
+   get_devpi_server 
+   pip_update "$pipbin"
+fi
+#if which pip>/dev/null; then
+#   pipbin=$(which pip)
+#   get_devpi_server
+#   pip_update "$pipbin"
+#fi
 
