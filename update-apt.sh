@@ -62,8 +62,8 @@ if [[ $myproxy =~ $pattern2 ]]; then
 	aptproxy_ip=${BASH_REMATCH[3]}
 	aptproxy_port=${BASH_REMATCH[4]}
 	echo "System can use aptproxy: ${aptproxy_ip}:${aptproxy_port} in ${aptproxy_file}"
-#	if is_host_up $aptproxy_ip $aptproxy_port >/dev/null; then
-	if is_host_tcp_port_up $aptproxy_ip  >/dev/null; then
+	if is_host_tcp_port_up $aptproxy_ip $aptproxy_port >/dev/null; then
+#	if is_host_tcp_port_up $aptproxy_ip  >/dev/null; then
    	echo "aptproxy ${aptproxy_ip}:${aptproxy_port} seems up and running!"
 		turn_http_all winehq.org
 		turn_http_all nodesource.com
