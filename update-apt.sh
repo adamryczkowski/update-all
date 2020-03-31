@@ -71,6 +71,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http_all syncthing.net
 		turn_http_all gitlab
 		turn_http_all skype.com
+		turn_http_all download.jitsi.org
 		turn_http_all docker
 		turn_http_all rstudio.com
 		turn_http_all virtualbox.org
@@ -93,6 +94,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_https_all syncthing.net
 		turn_https_all gitlab
 		turn_https_all skype.com
+		turn_https_all download.jitsi.org
 		turn_https_all docker
 		turn_https_all rstudio.com
 		turn_https_all virtualbox.org
