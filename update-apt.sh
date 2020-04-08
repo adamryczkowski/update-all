@@ -75,6 +75,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_http_all docker
 		turn_http_all rstudio.com
 		turn_http_all virtualbox.org
+		turn_http_all nvidia.github.io
 		turn_http_all signal.org
 		turn_http_all bintray.com/zulip
 		turn_http_all packagecloud.io/AtomEditor
@@ -98,6 +99,7 @@ if [[ $myproxy =~ $pattern2 ]]; then
 		turn_https_all docker
 		turn_https_all rstudio.com
 		turn_https_all virtualbox.org
+		turn_https_all nvidia.github.io
 		turn_https_all signal.org
 		turn_https_all bintray.com/zulip
 		turn_https_all packagecloud.io/AtomEditor
