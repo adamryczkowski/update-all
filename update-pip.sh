@@ -77,11 +77,12 @@ function find_devpi_server {
 function pip_update {
    $1 install --upgrade pip
 	if ! which pipupgrade >/dev/null; then
-		pip install pipupgrade
-		if ! which pipupgrade >/dev/null; then
-			pipupgrade --latest --yes
-			return
-		fi
+		pip3 install pipupgrade
+	fi
+	if which pipupgrade >/dev/null; then
+		pipupgrade --latest --yes
+	else
+	   python3 -m pipupgrade --latest --yes
 	fi
    $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
 }
