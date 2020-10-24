@@ -80,9 +80,9 @@ function pip_update {
 		$1 install pipupgrade
 	fi
 	if which pipupgrade >/dev/null; then
-		pipupgrade --latest --yes
+		pipupgrade --ignore-error --latest --yes
 	else
-	   python3 -m pipupgrade --latest --yes
+	   python3 -m pipupgrade --ignore-error --latest --yes
 	fi
    $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
 }
