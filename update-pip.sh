@@ -84,7 +84,7 @@ function pip_update {
 	else
 	   python3 -m pipupgrade --ignore-error --latest --yes
 	fi
-   $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
+#   $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
 }
 
 function get_devpi_server {
