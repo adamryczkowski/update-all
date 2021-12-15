@@ -45,6 +45,15 @@ if which snap >/dev/null; then
    enable_host api.snapcraft.io 127.0.0.1
    echo "Refreshing snaps..."
    sudo snap refresh
+
+	echo "Removing old snaps..."
+	set -eu
+	LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}' |
+	while read snapname revision; do
+		snap remove "$snapname" --revision="$revision"
+	done
+    
+
    echo "Disabling api.snapcraft.io..."
    disable_host api.snapcraft.io 127.0.0.1
 fi
