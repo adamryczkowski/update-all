@@ -75,9 +75,9 @@ function find_devpi_server {
 }
 
 function pip_update {
-   $1 install --upgrade pip
+   $1 -m pip install --upgrade pip
 	if ! which pipupgrade >/dev/null; then
-		$1 install pipupgrade
+		$1 -m pip install pipupgrade
 	fi
 	if which pipupgrade >/dev/null; then
 		pipupgrade --ignore-error --latest --yes
@@ -102,20 +102,20 @@ function get_devpi_server {
 
 devpi_server_tried=0
 if which pip>/dev/null; then
-   pipbin=$(which pip)
-   if [[ "${pipbin}" == "/usr/local/bin/pip" ]]; then
-      pipbin="sudo -H $pipbin"
+   python=$(which python2)
+   if [[ "${python}" == "/usr/bin/python2" ]]; then
+      python="sudo -H $python"
    fi
    get_devpi_server 
-   pip_update "$pipbin"
+   pip_update "$python"
 fi
 if which pip3>/dev/null; then
-   pipbin=$(which pip3)
-   if [[ "${pipbin}" == "/usr/local/bin/pip3" ]]; then
-      pipbin="sudo -H $pipbin"
+   python=$(which python3)
+   if [[ "${python}" == "/usr/bin/python3" ]]; then
+      python="sudo -H $python"
    fi
    get_devpi_server 
-   pip_update "$pipbin"
+   pip_update "$python"
 fi
 #if which pip>/dev/null; then
 #   pipbin=$(which pip)
