@@ -23,6 +23,8 @@ fi
 
 ./update-npm.sh 
 
+./update-poetry.sh
+
 ./update-pip.sh 
 
 ./update-R.sh 
