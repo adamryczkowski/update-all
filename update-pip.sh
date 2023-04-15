@@ -82,7 +82,7 @@ function pip_update {
 	if which pipupgrade >/dev/null; then
 		pipupgrade --ignore-error --latest --yes
 	else
-	   python3 -m pipupgrade --ignore-error --latest --yes
+	   $1 -m pipupgrade --ignore-error --latest --yes
 	fi
 #   $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
 }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! $(which julia) >/dev/null ]; then
-	return 0
+	exit 0
 fi
 
 julia_path=$(readlink $(which julia))
@@ -10,7 +10,7 @@ pattern='^(.*)\/([^\/]+)\/bin\/julia$'
 if [[ $julia_path =~ $pattern ]]; then
 	julia_path="${BASH_REMATCH[1]}"
 else
-	return 1
+	exit 1
 fi
 
 if [ $(which jill >/dev/null) ]; then
@@ -18,7 +18,7 @@ if [ $(which jill >/dev/null) ]; then
 fi
 
 if [ $(which jill >/dev/null) ]; then
-	return 1
+	exit 1
 fi
 
 jill install --upgrade -i "$julia_path" --confirm
