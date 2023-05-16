@@ -103,19 +103,23 @@ function get_devpi_server {
 devpi_server_tried=0
 if which pip>/dev/null; then
    python=$(which python2)
-   if [[ "${python}" == "/usr/bin/python2" ]]; then
-      python="sudo -H $python"
-   fi
-   get_devpi_server 
-   pip_update "$python"
+   if [[ "${python}" != "" ]]; then
+		if [[ "${python}" == "/usr/bin/python2" ]]; then
+		   python="sudo -H $python"
+		fi
+		get_devpi_server 
+		pip_update "$python"
+	fi
 fi
 if which pip3>/dev/null; then
    python=$(which python3)
-   if [[ "${python}" == "/usr/bin/python3" ]]; then
-      python="sudo -H $python"
-   fi
-   get_devpi_server 
-   pip_update "$python"
+   if [[ "${python}" != "" ]]; then
+		if [[ "${python}" == "/usr/bin/python3" ]]; then
+		   python="sudo -H $python"
+		fi
+		get_devpi_server 
+		pip_update "$python"
+	fi
 fi
 #if which pip>/dev/null; then
 #   pipbin=$(which pip)
