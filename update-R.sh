@@ -102,7 +102,7 @@ function update_rstudio {
   	fi
 	if [ "$ourversion" != "$netversion" ]; then
 		deb_folder=$(get_deb_folder)
-		RSTUDIO_URI="https://download1.rstudio.org/desktop/bionic/amd64/rstudio-${netversion1}-${netversion2}-amd64.deb"
+		RSTUDIO_URI="https://download1.rstudio.org/electron/jammy/amd64/rstudio-${netversion1}-${netversion2}-amd64.deb"
 		
 		wget -c --output-document /tmp/rstudio.deb $RSTUDIO_URI -O ${deb_folder}/rstudio_${netversion}_amd64.deb
 		if ! sudo dpkg -i ${deb_folder}/rstudio_${netversion}_amd64.deb; then
@@ -130,8 +130,9 @@ function update_rstudio_server {
 	fi
 	if [ "$ourversion" != "$netversion" ]; then
 		deb_folder=$(get_deb_folder)
-		RSTUDIO_URI="wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-${netversion1}-${netversion2}-amd64.deb"
-		
+#		RSTUDIO_URI="wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-${netversion1}-${netversion2}-amd64.deb"
+		RSTUDIO_URI="https://download2.rstudio.org/server/jammy/amd64/rstudio-server-${netversion1}-${netversion2}-amd64.deb"
+
 		wget -c $RSTUDIO_URI --output-document ${deb_folder}/rstudio-server_${netversion}_amd64.deb
 		if ! sudo dpkg -i ${deb_folder}/rstudio-server_${netversion}_amd64.deb; then
 			sudo apt install -f --yes
