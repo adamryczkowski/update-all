@@ -30,10 +30,13 @@ else
   exit 1
 fi
 
-steamcmd +login $mylogin $(
+Found the following games:
+LD_PRELOAD="" steamcmd +login $mylogin +apps_installed +quit   |grep -Po '^AppID [0-9]+(?= : ).*' | sort -V
+
+LD_PRELOAD="" steamcmd +login $mylogin $(
   steamcmd +login $mylogin +apps_installed +quit \
   |grep -Po '(?<=^AppID )[0-9]+(?= : )' \
   |sort -V \
   |while read appid; do \
-    echo +app_update "$appid" validate; done \
+    echo +app_update "$appid"; done \
 ) +quit
