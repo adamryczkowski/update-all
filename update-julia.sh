@@ -23,3 +23,5 @@ fi
 
 jill install --upgrade -i "$julia_path" --confirm
 
+# Upgrade all packages in the default environment
+julia -e 'using Pkg; Pkg.update()'

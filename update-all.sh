@@ -43,5 +43,7 @@ fi
 
 ./update-lxc-containers.sh
 
+./update-steam.sh
+
 ./do-bedup.sh
 wait

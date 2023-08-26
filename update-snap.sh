@@ -9,6 +9,17 @@ function add_host {
 	fi
 }
 
+function is_host_disabled {
+  # Checks if the host is disabled, mapped to 127.0.0.1
+  local host=$1
+  local pattern="\s*127\.0\.0\.1\s+${host}"
+  if grep -E "$pattern" /etc/hosts >/dev/null; then
+    echo "1"
+  else
+    echo "0"
+  fi
+}
+
 function disable_host {
 	local host=$1
 	local ip=$2
@@ -40,20 +51,29 @@ function enable_host {
 	fi
 }
 
-if which snap >/dev/null; then
-   echo "Enabling api.snapcraft.io..."
-   enable_host api.snapcraft.io 127.0.0.1
-   echo "Refreshing snaps..."
-   sudo snap refresh
+# If arg1 == "lib" we are doing nothing - just adding the functions
 
-	echo "Removing old snaps..."
-	set -eu
-	LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}' |
-	while read snapname revision; do
-		sudo snap remove "$snapname" --revision="$revision"
-	done
-    
+if [ "$1" != "lib" ]; then
 
-   echo "Disabling api.snapcraft.io..."
-   disable_host api.snapcraft.io 127.0.0.1
+  if which snap >/dev/null; then
+    host_is_disabled=$(is_host_disabled api.snapcraft.io)
+    if [ "$host_is_disabled" = "1" ]; then
+      echo "Enabling api.snapcraft.io..."
+      enable_host api.snapcraft.io 127.0.0.1
+    fi
+    echo "Refreshing snaps..."
+    sudo snap refresh
+    echo "Removing old snaps..."
+    set -eu
+    LANG=en_US.UTF-8 snap list --all | awk '/disabled/{print $1, $3}' |
+    while read snapname revision; do
+      sudo snap remove "$snapname" --revision="$revision"
+    done
+
+    if [ "$host_is_disabled" = "1" ]; then
+      echo "Disabling back api.snapcraft.io..."
+      disable_host api.snapcraft.io 127.0.0.1
+    fi
+  fi
+
 fi

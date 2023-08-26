@@ -4,6 +4,10 @@ if ! which lxc >/dev/null; then
     exit 0 #no containers
 fi
 
+. update-snap.sh lib
+
+
+
 lxc list 2>/dev/null >/dev/null
 
 if [ ! $? -eq 0 ]; then
@@ -46,8 +50,18 @@ function install_run_update_all {
     ssh $ip "cd $homedir; ./update-all.sh"
 }
 
+host_is_disabled=$(is_host_disabled api.snapcraft.io)
+if [ "host_is_disabled" = "1" ]; then
+  echo "Enabling api.snapcraft.io..."
+  enable_host api.snapcraft.io 127.0.0.1
+fi
+
 
 for lxc_name in "${lxc_list_running[@]}"; do
     update_running_lxc "${lxc_name}"
 done
 
+if [ "$host_is_disabled" = "1" ]; then
+  echo "Disabling back api.snapcraft.io..."
+  disable_host api.snapcraft.io 127.0.0.1
+fi
