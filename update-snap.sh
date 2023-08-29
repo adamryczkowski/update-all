@@ -12,7 +12,7 @@ function add_host {
 function is_host_disabled {
   # Checks if the host is disabled, mapped to 127.0.0.1
   local host=$1
-  local pattern="\s*127\.0\.0\.1\s+${host}"
+  local pattern="^\s*127\.0\.0\.1\s+${host}"
   if grep -E "$pattern" /etc/hosts >/dev/null; then
     echo "1"
   else
