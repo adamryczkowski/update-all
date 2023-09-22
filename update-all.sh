@@ -45,5 +45,7 @@ fi
 
 ./update-steam.sh
 
+./update-snap.sh
+
 ./do-bedup.sh
 wait
