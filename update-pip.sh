@@ -76,6 +76,10 @@ function find_devpi_server {
 
 function pip_update {
    $1 -m pip install --upgrade pip
+}
+
+function run_pipupgrade {
+   pip_update
    if [[ "$2" == 1 ]]; then
       user_update="--user"
     else
