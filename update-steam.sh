@@ -30,7 +30,7 @@ else
   exit 1
 fi
 
-Found the following games:
+echo "Found the following games:"
 LD_PRELOAD="" steamcmd +login $mylogin +apps_installed +quit   |grep -Po '^AppID [0-9]+(?= : ).*' | sort -V
 
 LD_PRELOAD="" steamcmd +login $mylogin $(
