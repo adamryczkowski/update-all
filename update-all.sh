@@ -47,5 +47,7 @@ fi
 
 ./update-snap.sh
 
+./update-pihole.sh
+
 ./do-bedup.sh
 wait
