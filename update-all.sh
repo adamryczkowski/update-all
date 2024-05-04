@@ -35,6 +35,8 @@ fi
 
 ./update-julia.sh
 
+./update-rust.sh
+
 ./update-waterfox.sh
 
 ./update-calibre.sh
