@@ -37,6 +37,8 @@ fi
 
 ./update-rust.sh
 
+./update-atuin.sh
+
 ./update-waterfox.sh
 
 ./update-calibre.sh
