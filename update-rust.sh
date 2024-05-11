@@ -1,7 +1,4 @@
 #!/bin/sh
-if [ ! $(which rust) >/dev/null ]; then
-	exit 0
-fi
 if [ ! $(which cargo) >/dev/null ]; then
 	exit 0
 fi
