@@ -25,7 +25,7 @@ fi
 
 ./update-poetry.sh
 
-./update-pip.sh 
+./update-pipx.sh 
 
 ./update-R.sh 
 
