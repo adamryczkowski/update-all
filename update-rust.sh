@@ -1,4 +1,8 @@
 #!/bin/sh
+if [ $(which rustup) >/dev/null ]; then
+	rustup update
+fi
+
 if [ ! $(which cargo) >/dev/null ]; then
 	exit 0
 fi
