@@ -5,7 +5,7 @@ if  ! which R >/dev/null; then
 fi
 
 localrmirror="/media/adam-minipc/other"
-remotemirror="http://cran.us.r-project.org"
+remotemirror="https://cloud.r-project.org"
 minipc=192.168.10.2
 
 function mount_smb_share {
@@ -58,12 +58,12 @@ function get_deb_folder {
 
 function update_r {
 	cran_folder=$(get_other_folder r-mirror)
-	if [ -n "${cran_folder}" ]; then
-		remotemirror="file:///${cran_folder}"
-		remotemirror="http://cran.us.r-project.org"
-	else
-		remotemirror="http://cran.us.r-project.org"
-	fi
+#	if [ -n "${cran_folder}" ]; then
+#		remotemirror="file:///${cran_folder}"
+#		remotemirror="http://cran.us.r-project.org"
+#	else
+#		remotemirror="http://cran.us.r-project.org"
+#	fi
 	sudo chown -R ${USER} $(get_home_dir)/R
 	Rscript -e 'dir.create(path = Sys.getenv("R_LIBS_USER"), showWarnings = FALSE, recursive = TRUE)'
 	Rscript -e "update.packages(ask = FALSE, lib = Sys.getenv(\"R_LIBS_USER\"), repos=\"${remotemirror}\")"
