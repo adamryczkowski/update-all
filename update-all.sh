@@ -49,6 +49,8 @@ fi
 
 ./update-steam.sh
 
+./update-texlive.sh
+
 ./update-snap.sh
 
 ./update-pihole.sh
