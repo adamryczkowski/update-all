@@ -47,7 +47,7 @@ fi
 
 ./update-lxc-containers.sh
 
-./update-steam.sh
+# ./update-steam.sh
 
 ./update-texlive.sh
 
