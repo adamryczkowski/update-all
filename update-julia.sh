@@ -4,7 +4,7 @@ if [ ! $(which julia) >/dev/null ]; then
 	exit 0
 fi
 
-julia_path=$(readlink $(which julia))
+julia_path=$(readlink -f $(which julia))
 
 pattern='^(.*)\/([^\/]+)\/bin\/julia$'
 if [[ $julia_path =~ $pattern ]]; then
@@ -13,15 +13,16 @@ else
 	exit 1
 fi
 
-if [ $(which jill >/dev/null) ]; then
-	pip install jill
+if ! which juliaup >/dev/null; then
+	if which cargo >/dev/null; then 
+		cargo install juliaup
+	fi
 fi
 
-if [ $(which jill >/dev/null) ]; then
-	exit 1
+if which juliaup >/dev/null; then
+	juliaup update
 fi
 
-jill install --upgrade -i "$julia_path" --confirm
 
 # Upgrade all packages in the default environment
 julia -e 'using Pkg; Pkg.update()'
