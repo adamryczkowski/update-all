@@ -49,6 +49,8 @@ fi
 
 # ./update-steam.sh
 
+./update-go.sh
+
 ./update-texlive.sh
 
 ./update-snap.sh
