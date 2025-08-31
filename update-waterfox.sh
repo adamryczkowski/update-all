@@ -1,8 +1,8 @@
 #!/bin/bash
 repo_path=/media/adam-minipc/other/debs
 
-if which waterfox; then
-	waterfox=$(which waterfox)
+if command -v waterfox >/dev/null; then
+	waterfox=$(command -v waterfox)
 elif [ -f /opt/waterfox/waterfox ]; then
 	waterfox=/opt/waterfox/waterfox
 else
@@ -15,7 +15,7 @@ pattern='^Mozilla Waterfox ([0-9.]+)$'
 if [[ "$local_version" =~ $pattern ]]; then
 	local_version=${BASH_REMATCH[1]}
 else
-	echo "Something wrong with the waterfox. ${waterfox} --version returned\n${local_version}"
+	printf '%s\n' "Something wrong with the waterfox. ${waterfox} --version returned" "$local_version"
 	exit 1
 fi
 
@@ -29,43 +29,37 @@ remote_version=$(get_latest_github_release_name MrAlex94/Waterfox)
 pattern='^([0-9\.]+)\-.*$'
 if [[ "${remote_version}" =~ $pattern ]]; then
    ver_str="${BASH_REMATCH[1]}"
-   clas_str="${BASH_REMATCH[2]}"
+   clas_str="${BASH_REMATCH[2]}"; : "${clas_str}"
 else
 	echo "Something wrong with the remote version of waterfox: ${remote_version}"
 	exit 1
 fi
 
-#if [[ "$remote_version" =~ $pattern ]]; then
-#	remote_version=${BASH_REMATCH[1]}
-#else
-#	echo "Something wrong with the remote version of waterfox: ${remote_version}"
-#	exit 1
-#fi
-
 function get_cached_file {
 	local filename="$1"
 	local download_link="$2"
-	if [ ! -d "${repo_path}" ]; then
+	local _repo_path="$repo_path"
+	if [ ! -d "${_repo_path}" ]; then
 		mkdir -p /tmp/repo_path
-		local repo_path="/tmp/repo_path"
+		_repo_path="/tmp/repo_path"
 	fi
-	if [ ! -f "${repo_path}/${filename}" ]; then
+	if [ ! -f "${_repo_path}/${filename}" ]; then
 		if [ -z "$download_link" ]; then
 			echo "File is missing from cache"
 			return 1
 		fi
-		if [ ! -w "${repo_path}" ]; then
-			echo "Cannot write to the repo ${repo_path}" >/dev/stderr
-			local repo_path="/tmp/repo_path"
+		if [ ! -w "${_repo_path}" ]; then
+			echo "Cannot write to the repo ${_repo_path}" >/dev/stderr
+			_repo_path="/tmp/repo_path"
 			mkdir -p /tmp/repo_path
 		fi
-		wget -c "${download_link}" -O "${repo_path}/${filename}"
+		wget -c "${download_link}" -O "${_repo_path}/${filename}"
 	fi
-	if [ ! -f "${repo_path}/${filename}" ]; then
+	if [ ! -f "${_repo_path}/${filename}" ]; then
 		echo "Cannot download the file"
 		return 1
 	fi
-	echo "${repo_path}/${filename}"
+	echo "${_repo_path}/${filename}"
 }
 
 function is_folder_writable {
@@ -73,33 +67,26 @@ function is_folder_writable {
 	local user="$2"
 	
 	#source: https://stackoverflow.com/questions/14103806/bash-test-if-a-directory-is-writable-by-a-given-uid
-	# Use -L to get information about the target of a symlink,
-	# not the link itself, as pointed out in the comments
-	INFO=( $(stat -L -c "0%a %G %U" $folder) )
+	read -r -a INFO < <(stat -L -c "0%a %G %U" "$folder")
 	PERM=${INFO[0]}
 	GROUP=${INFO[1]}
 	OWNER=${INFO[2]}
 
 	ACCESS=no
-	if (( ($PERM & 0002) != 0 )); then
-		# Everyone has write access
+	if ((( PERM & 0002 ) != 0 )); then
 		ACCESS=yes
-	elif (( ($PERM & 0020) != 0 )); then
-		# Some group has write access.
-		# Is user in that group?
-		gs=( $(groups $user) )
+	elif ((( PERM & 0020 ) != 0 )); then
+		readarray -t gs < <(groups "$user")
 		for g in "${gs[@]}"; do
-			if [[ $GROUP == $g ]]; then
+			if [[ $GROUP == "$g" ]]; then
 				ACCESS=yes
 				break
 			fi
 		done
-	elif (( ($PERM & 0200) != 0 )); then
-		# The owner has write access.
-		# Does the user own the file?
-		[[ $user == $OWNER ]] && ACCESS=yes
+	elif ((( PERM & 0200 ) != 0 )); then
+		[[ $user == "$OWNER" ]] && ACCESS=yes
 	fi
-	if [ "$ACCESS" == 'yes' ]; then
+	if [ "$ACCESS" = 'yes' ]; then
 		return 0
 	else
 		return 1
@@ -113,22 +100,23 @@ set -x
 	local destination="$2"
 	local usergr="$3"
 	local user
-	local timestamp_path="$(dirname ${destination})/$(basename ${filename}).timestamp"
+	local timestamp_path; timestamp_path="$(dirname "${destination}")/$(basename "${filename}").timestamp"
 	if [ -z "$usergr" ]; then
 		user=$USER
 		usergr=$user
-		group=""
+		group=""; : "${group}"
 	else
 		local pattern='^([^:]+):([^:]+)$'
 		if [[ "$usergr" =~ $pattern ]]; then
-			group=${BASH_REMATCH[2]}
+			group=${BASH_REMATCH[2]}; : "${group}"
 			user=${BASH_REMATCH[1]}
 		else
-			group=""
+			group=""; : "${group}"
 			user=$usergr
 		fi
 	fi
 	
+	local path_filename
 	if [ ! -f "$filename" ]; then
 		path_filename=$(get_cached_file "$filename")
 	else
@@ -146,52 +134,48 @@ set -x
 		moddate_remote=$(stat -c %y "$destination")
 		if [ -f "$timestamp_path" ]; then
 			moddate_hdd=$(cat "$timestamp_path")
-			if [ "$moddate_hdd" == "$moddate_remote" ]; then
+			if [ "$moddate_hdd" = "$moddate_remote" ]; then
 				return 0
 			fi
 		fi
 	fi
-	pushd $(dirname $destination)
-	if is_folder_writable $(dirname "$destination") "$user"; then
-		if [ "$user" == "$USER" ]; then
-#			logexec tar -xvf "$path_filename" -C "$destination"
+	local destdir; destdir=$(dirname "$destination")
+	pushd "$destdir" >/dev/null || return 0
+	if is_folder_writable "$destdir" "$user"; then
+		if [ "$user" = "$USER" ]; then
 			dtrx --one rename "$path_filename"
-			extension="${path_filename##*.}"
 			filename_no_ext="${path_filename%.*}"
 			if [ ! -d "$filename_no_ext" ]; then
 				filename_no_ext="${filename_no_ext%.*}"
 			fi
-			if [ -d "$(basename $destination)" ]; then
-				sudo rm -rf $(basename $destination) 
+			if [ -d "$(basename "$destination")" ]; then
+				sudo rm -rf "$(basename "$destination")"
 			fi
-			sudo mv $(basename $filename_no_ext) $(basename $destination) 
+			sudo mv "$(basename "$filename_no_ext")" "$(basename "$destination")"
 			echo "$moddate_remote" | tee "$timestamp_path" >/dev/null
 		else
-#			echo sudo -u "$user" dtrx --one rename "$path_filename"
 			sudo -u "$user" dtrx --one rename "$path_filename"
-			if [ -d "$(basename $destination)" ]; then
-				sudo rm -rf $(basename $destination) 
+			if [ -d "$(basename "$destination")" ]; then
+				sudo rm -rf "$(basename "$destination")"
 			fi
-			sudo mv $(basename $filename_no_ext) $(basename $destination) 
-#			logexec sudo -u "$user" -- tar -xvf "$path_filename" -C "$destination"
+			sudo mv "$(basename "$filename_no_ext")" "$(basename "$destination")"
 			echo "$moddate_remote" | sudo -u "$user" -- tee "$timestamp_path" >/dev/null
 		fi
 	else
-#		echo sudo dtrx --one rename "$path_filename"
 		sudo dtrx --one rename "$path_filename"
-			if [ -d "$(basename $destination)" ]; then
-				rm -rf $(basename $destination) 
-			fi
-		sudo mv $(basename $filename_no_ext) $(basename $destination) 
-#		logexec sudo tar -xvf "$path_filename" -C "$destination"
+		if [ -d "$(basename "$destination")" ]; then
+			rm -rf "$(basename "$destination")"
+		fi
+		sudo mv "$(basename "$filename_no_ext")" "$(basename "$destination")"
 		sudo chown -R "$usergr" "$destination"
 		echo "$moddate_remote" | sudo -u "$user" -- tee "$timestamp_path" >/dev/null
 	fi
-	popd
+	popd >/dev/null || true
 set +x
 }
 
 if [ ! -f /usr/share/applications/waterfox.desktop ]; then
+	localexec="$waterfox"
 	sudo tee -a /usr/share/applications/waterfox.desktop  <<EOF
 [Desktop Entry]
 Version=1.0
@@ -355,71 +339,18 @@ Actions=new-window;new-private-window;
 
 [Desktop Action new-window]
 Name=Open a New Window
-Name[ar]=افتح نافذة جديدة
-Name[ast]=Abrir una ventana nueva
-Name[bn]=Abrir una ventana nueva
-Name[ca]=Obre una finestra nova
-Name[cs]=Otevřít nové okno
-Name[da]=Åbn et nyt vindue
-Name[de]=Ein neues Fenster öffnen
-Name[el]=Νέο παράθυρο
-Name[es]=Abrir una ventana nueva
-Name[fi]=Avaa uusi ikkuna
-Name[fr]=Ouvrir une nouvelle fenêtre
-Name[gl]=Abrir unha nova xanela
-Name[he]=פתיחת חלון חדש
-Name[hr]=Otvori novi prozor
-Name[hu]=Új ablak nyitása
-Name[it]=Apri una nuova finestra
-Name[ja]=新しいウィンドウを開く
-Name[ko]=새 창 열기
-Name[ku]=Paceyeke nû veke
-Name[lt]=Atverti naują langą
-Name[nb]=Åpne et nytt vindu
-Name[nl]=Nieuw venster openen
-Name[pt]=Abrir nova janela
-Name[pt_BR]=Abrir nova janela
-Name[ro]=Deschide o fereastră nouă
-Name[ru]=Новое окно
-Name[sk]=Otvoriť nové okno
-Name[sl]=Odpri novo okno
-Name[sv]=Öppna ett nytt fönster
-Name[tr]=Yeni pencere aç 
-Name[ug]=يېڭى كۆزنەك ئېچىش
-Name[uk]=Відкрити нове вікно
-Name[vi]=Mở cửa sổ mới
-Name[zh_CN]=新建窗口
-Name[zh_TW]=開啟新視窗
 Exec=${localexec} -new-window
 
 [Desktop Action new-private-window]
 Name=Open a New Private Window
-Name[ar]=افتح نافذة جديدة للتصفح الخاص
-Name[cs]=Otevřít nové anonymní okno
-Name[de]=Ein neues privates Fenster öffnen
-Name[el]=Νέο ιδιωτικό παράθυρο
-Name[es]=Abrir una ventana privada nueva
-Name[fi]=Avaa uusi yksityinen ikkuna
-Name[fr]=Ouvrir une nouvelle fenêtre de navigation privée
-Name[he]=פתיחת חלון גלישה פרטית חדש
-Name[hu]=Új privát ablak nyitása
-Name[it]=Apri una nuova finestra anonima
-Name[nb]=Åpne et nytt privat vindu
-Name[ru]=Новое приватное окно
-Name[sl]=Odpri novo okno zasebnega brskanja
-Name[sv]=Öppna ett nytt privat fönster
-Name[tr]=Yeni bir pencere aç
-Name[uk]=Відкрити нове вікно у потайливому режимі
-Name[zh_TW]=開啟新隱私瀏覽視窗
 Exec=${localexec} -private-window
 EOF
 fi
 
-if [[ $remote_version != $local_version ]]; then
+if [[ "$remote_version" != "$local_version" ]]; then
 	link="https://storage-waterfox.netdna-ssl.com/releases/linux64/installer/waterfox-classic-${ver_str}.en-US.linux-x86_64.tar.bz2"
 	filename="waterfox-${ver_str}.en-US.linux-x86_64.tar.bz2"
-	file=$(get_cached_file "$filename" "$link")
-	uncompress_cached_file ${filename} "/opt/waterfox"
+	get_cached_file "$filename" "$link"
+	uncompress_cached_file "$filename" "/opt/waterfox"
 	sudo chown root -R "/opt/waterfox"
 fi
-

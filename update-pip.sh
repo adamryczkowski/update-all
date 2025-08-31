@@ -1,52 +1,48 @@
 #!/bin/bash
 
-trusted_infix=""
-
 function is_host_up {
-	ping -c 1 -w 1  $1 >/dev/null
+	ping -c 1 -w 1 "$1" >/dev/null
 }
 
 function is_host_tcp_port_up {
-   if is_host_up $1; then
-      local host=$1
-      local port=$2
-      nc -zw3 $1 $2
+   if is_host_up "$1"; then
+      local _host=$1
+      local _port=$2
+      nc -zw3 "$1" "$2"
    fi
 }
 
 function get_home_dir {
-	if [ -n "$1" ]; then
-		local USER=$1
-	fi
-	echo $( getent passwd "$USER" | cut -d: -f6 )
+	local u
+	u=${1:-$USER}
+	getent passwd "$u" | cut -d: -f6
 }
 
 function enable_devpi_client {
    local user=$1
    local address=$2
-   
    local contents="[global]
 index-url = http://${address}/root/pypi/+simple/
 trusted-host=${address}
 
 [search]
 index = http://${address}/root/pypi/"
-   
-   file=$(get_home_dir $1)/.pip/pip.conf
-   echo "$contents" | sudo tee $file >/dev/null
-   trusted_infix="--trusted ${address}"
+   local file
+   file=$(get_home_dir "$user")/.pip/pip.conf
+   echo "$contents" | sudo tee "$file" >/dev/null
 }
 
 function disable_devpi_client {
    local user=$1
-
-   file_src=$(get_home_dir $1)/.pip/pip.conf
-   file_dest=$(get_home_dir $1)/.pip/pip.conf.bak
-   if [ -e file_src ]; then
-      if [ -e $file_dest ]; then
-         sudo rm $file_dest
+   local file_src
+   local file_dest
+   file_src=$(get_home_dir "$user")/.pip/pip.conf
+   file_dest=$(get_home_dir "$user")/.pip/pip.conf.bak
+   if [ -e "$file_src" ]; then
+      if [ -e "$file_dest" ]; then
+         sudo rm "$file_dest"
       fi
-      sudo mv $file_src $file_dest
+      sudo mv "$file_src" "$file_dest"
    fi
 }
 
@@ -57,53 +53,39 @@ function find_devpi_server {
       return
    fi
    devpi_server_tried=1
-   file=$(get_home_dir $1)/.pip/$file
-   if sudo [ ! -e $file ]; then
+   file=$(get_home_dir "$user")/.pip/$file
+   if ! sudo test -e "$file"; then
    	devpi_server_ip=""
-	   devpi_server_port=""
-	   return
+   	devpi_server_port=""
+   	return
    fi
 	pattern='^index *= *https?://(.*):([0-9]+)/.*/$'
-   phrase=$(sudo grep -rE "$pattern" $file | head -n 1)
+   phrase=$(sudo grep -rE "$pattern" "$file" | head -n 1)
    if [[ $phrase =~ $pattern ]]; then
    	devpi_server_ip=${BASH_REMATCH[1]}
-	   devpi_server_port=${BASH_REMATCH[2]}
+   	devpi_server_port=${BASH_REMATCH[2]}
+   	: "${devpi_server_port}"
 	else
    	devpi_server_ip=""
-	   devpi_server_port=""
+   	devpi_server_port=""
 	fi
 }
 
 function pip_update {
-   $1 -m pip install --upgrade pip
+   "$1" -m pip install --upgrade pip
 }
 
-function run_pipupgrade {
-   pip_update
-   if [[ "$2" == 1 ]]; then
-      user_update="--user"
-    else
-      user_update=""
-   fi
-	if ! which pipupgrade >/dev/null; then
-		$1 -m pip install --upgrade $user_update pipupgrade
-	fi
-	if which pipupgrade >/dev/null; then
-		pipupgrade --ignore-error --latest --yes
-	else
-	   $1 -m pipupgrade --ignore-error --latest --yes
-	fi
-#   $1 freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 $1 install -U
-}
+# Unused helper left for reference; prefer pip_update directly
+# function run_pipupgrade { ... }
 
 function get_devpi_server {
    find_devpi_server root pip.conf
-   if [[ "$devpi_server_ip" == "" ]]; then
-      find_devpi_server $USER pip.conf
-      if [[ "$devpi_server_ip" == "" ]]; then
+   if [[ -z "$devpi_server_ip" ]]; then
+      find_devpi_server "$USER" pip.conf
+      if [[ -z "$devpi_server_ip" ]]; then
          find_devpi_server root pip.conf.bak
-         if [[ "$devpi_server_ip" == "" ]]; then
-            find_devpi_server $USER pip.conf.bak
+         if [[ -z "$devpi_server_ip" ]]; then
+            find_devpi_server "$USER" pip.conf.bak
          fi
       fi
    fi
@@ -111,33 +93,23 @@ function get_devpi_server {
 
 devpi_server_tried=0
 user_update=0
-if which pip>/dev/null; then
-   python=$(which python2)
-   if [[ "${python}" != "" ]]; then
+if command -v pip >/dev/null; then
+   python=$(command -v python2 || true)
+   if [[ -n "${python}" ]]; then
 		if [[ "${python}" == "/usr/bin/python2" ]]; then
-		   python="$python"
 		   user_update=1
-#		   python="sudo -H $python"
 		fi
 		get_devpi_server 
-		pip_update "$python" $user_update
+		pip_update "$python" "$user_update"
 	fi
 fi
-if which pip3>/dev/null; then
-   python=$(which python3)
-   if [[ "${python}" != "" ]]; then
+if command -v pip3 >/dev/null; then
+   python=$(command -v python3)
+   if [[ -n "${python}" ]]; then
 		if [[ "${python}" == "/usr/bin/python3" ]]; then
-#		   python="sudo -H $python"
 		   user_update=1
-		   python="$python"
 		fi
 		get_devpi_server 
-		pip_update "$python" $user_update
+		pip_update "$python" "$user_update"
 	fi
 fi
-#if which pip>/dev/null; then
-#   pipbin=$(which pip)
-#   get_devpi_server
-#   pip_update "$pipbin"
-#fi
-

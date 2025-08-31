@@ -1,4 +1,7 @@
-if which git>/dev/null; then
+#!/bin/bash
+# update-all: orchestrates all updater scripts
+
+if command -v git >/dev/null; then
     if [ -d .git ]; then
         git remote update
         UPSTREAM=${1:-'@{u}'}
@@ -6,12 +9,12 @@ if which git>/dev/null; then
         REMOTE=$(git rev-parse "$UPSTREAM")
         BASE=$(git merge-base @ "$UPSTREAM")
 
-        if [ $LOCAL = $REMOTE ]; then
+        if [ "$LOCAL" = "$REMOTE" ]; then
             echo "update-all up-to-date"
-        elif [ $LOCAL = $BASE ]; then
+        elif [ "$LOCAL" = "$BASE" ]; then
             git pull
             bash -x ./update-all.sh
-        elif [ $REMOTE = $BASE ]; then
+        elif [ "$REMOTE" = "$BASE" ]; then
             echo "Need to push update-all, but we will not do that automatically"
         else
             echo "Diverged from upstream. Skipping update"

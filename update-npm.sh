@@ -1,7 +1,6 @@
 #!/bin/bash
-if which npm; then
-    pushd ~
+if command -v npm >/dev/null; then
+    pushd ~ >/dev/null || exit 0
     sudo npm update -g
-    popd
+    popd >/dev/null || true
 fi
-

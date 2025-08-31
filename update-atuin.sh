@@ -1,8 +1,8 @@
-# If steam is not present - exit
+#!/bin/bash
+# If atuin is not present - exit
 
-if ! which atuin; then
+if ! command -v atuin >/dev/null; then
   exit 0
 fi
 
 atuin sync
-

@@ -1,9 +1,9 @@
-#!/bin/sh
-if [ $(which rustup) >/dev/null ]; then
+#!/bin/bash
+if command -v rustup >/dev/null; then
 	rustup update
 fi
 
-if [ ! $(which cargo) >/dev/null ]; then
+if ! command -v cargo >/dev/null; then
 	exit 0
 fi
 echo "Updating rust-installed packages..."

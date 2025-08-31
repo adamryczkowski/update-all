@@ -1,22 +1,23 @@
+#!/bin/bash
 # If steam is not present - exit
 
-if ! which steam; then
+if ! command -v steam >/dev/null; then
   echo "Steam is not installed. Please install it first."
   exit 1
 fi
 
 # If steamcmd is not present - install it
 
-if ! which steamcmd; then
+if ! command -v steamcmd >/dev/null; then
   echo "SteamCMD is not installed. Installing..."
-  sudo apt-get install debconf-utils
+  sudo apt-get install -y debconf-utils
   echo "steam steam/question select I AGREE" | sudo /usr/bin/debconf-set-selections
   sudo apt install --yes steamcmd
 fi
 
 # If steam is not logged in - exit
 
-if ! steamcmd +login anonymous +quit; then
+if ! steamcmd +login anonymous +quit >/dev/null 2>&1; then
   echo "Steam is not logged in. Please log in first."
   exit 1
 fi
@@ -31,12 +32,13 @@ else
 fi
 
 echo "Found the following games:"
-LD_PRELOAD="" steamcmd +login $mylogin +apps_installed +quit   |grep -Po '^AppID [0-9]+(?= : ).*' | sort -V
+LD_PRELOAD="" steamcmd +login "$mylogin" +apps_installed +quit | grep -Po '^AppID [0-9]+(?= : ).*' | sort -V
 
-LD_PRELOAD="" steamcmd +login $mylogin $(
-  steamcmd +login $mylogin +apps_installed +quit \
-  |grep -Po '(?<=^AppID )[0-9]+(?= : )' \
-  |sort -V \
-  |while read appid; do \
+# shellcheck disable=SC2046
+LD_PRELOAD="" steamcmd +login "$mylogin" $(
+  steamcmd +login "$mylogin" +apps_installed +quit \
+  | grep -Po '(?<=^AppID )[0-9]+(?= : )' \
+  | sort -V \
+  | while read -r appid; do \
     echo +app_update "$appid"; done \
 ) +quit

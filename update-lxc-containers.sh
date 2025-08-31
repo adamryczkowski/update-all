@@ -1,61 +1,54 @@
 #!/bin/bash
 
-if ! which lxc >/dev/null; then
-    exit 0 #no containers
+if ! command -v lxc >/dev/null; then
+    exit 0 # no containers
 fi
 
-. update-snap.sh lib
+. ./update-snap.sh lib
 
-
-
-lxc list 2>/dev/null >/dev/null
-
-if [ ! $? -eq 0 ]; then
-    echo "Error in executing lxc list. Perhaps lxc was not installed properly" >/dev/stderr
-    exit 0 #error when accessing containers. We are not going to fix it here, so just return.
+# Check lxc works
+if ! lxc list >/dev/null 2>&1; then
+    echo "Error executing lxc list. Perhaps lxc was not installed properly" >/dev/stderr
+    exit 0
 fi
 
-
-lxc_list_stopped=$(lxc list --format csv | grep -E '^[^,]+,STOPPED' | grep -o -E '^[^,]+')
-
-lxc_list_running=( $(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+') )
+# Build list of running containers
+mapfile -t lxc_list_running < <(lxc list --format csv | grep -E '^[^,]+,RUNNING' | grep -o -E '^[^,]+')
 
 function update_running_lxc {
-    local lxc_name=$1
-    ips=( $(eval echo $(lxc list -c4 --format csv $lxc_name | sed -E "s/ \([^\)]+\) ?//g") ) )
-    
+    local lxc_name="$1"
+    mapfile -t ips < <(lxc list -c4 --format csv "$lxc_name" | sed -E 's/ \([^)]*\) ?//g')
     for ip in "${ips[@]}"; do
-        if ssh -o PreferredAuthentications=publickey ${ip} /bin/true >/dev/null; then
-            install_run_update_all ${ip} ${lxc_name}
+        if ssh -o PreferredAuthentications=publickey "$ip" /bin/true >/dev/null 2>&1; then
+            install_run_update_all "$ip" "$lxc_name"
             break
         fi
-    done   
+    done
 }
 
 function install_run_update_all {
-    local ip=$1
-    local lxc_name=$2
-    local homedir=$(ssh $ip pwd)
-    if ! [ $? -eq 0 ]; then
-        return 1; # cannot access the container
+    local ip="$1"
+    local lxc_name="$2"
+    local homedir
+    if ! homedir=$(ssh "$ip" pwd); then
+        return 1 # cannot access the container
     fi
     homedir="${homedir}/tmp/update-all"
 
-    if ! ssh $ip ls "${homedir}/.git" 2>/dev/null >/dev/null; then
-        ssh $ip mkdir -p "${homedir}" 
-        for file in $(pwd)/*.sh; do
-            lxc file push "${file}" "$2/${homedir}/"
+    if ! ssh "$ip" sh -c 'test -d "$1/.git"' _ "$homedir" >/dev/null 2>&1; then
+        ssh "$ip" sh -c 'mkdir -p "$1"' _ "$homedir"
+        for file in ./*.sh; do
+            lxc file push "${file}" "${lxc_name}/${homedir}/"
         done
     fi
-    ssh $ip "cd $homedir; ./update-all.sh"
+    ssh "$ip" sh -c 'cd "$1"; ./update-all.sh' _ "$homedir"
 }
 
 host_is_disabled=$(is_host_disabled api.snapcraft.io)
-if [ "host_is_disabled" = "1" ]; then
+if [ "$host_is_disabled" = "1" ]; then
   echo "Enabling api.snapcraft.io..."
   enable_host api.snapcraft.io 127.0.0.1
 fi
-
 
 for lxc_name in "${lxc_list_running[@]}"; do
     update_running_lxc "${lxc_name}"
